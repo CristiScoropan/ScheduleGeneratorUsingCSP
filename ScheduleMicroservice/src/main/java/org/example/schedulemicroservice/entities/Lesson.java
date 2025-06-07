@@ -8,8 +8,6 @@ import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @Entity
 @PlanningEntity
-@Getter
-@Setter
 @Data
 @Builder
 @NoArgsConstructor
@@ -24,21 +22,25 @@ public class Lesson {
     @JoinColumn(name = "subject_id", nullable = false)
     private Subject subject;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "class_group_id", nullable = false)
     private ClassGroup classGroup;
 
     @PlanningVariable(valueRangeProviderRefs = {"timeslotRange"})
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "timeslot_id")
     private Timeslot timeslot;
 
     @PlanningVariable(valueRangeProviderRefs = {"classroomRange"})
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classoom_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "classroom_id")
     private Classroom classroom;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_reference_id", nullable = false)
+    private UserReference userReference;
 }

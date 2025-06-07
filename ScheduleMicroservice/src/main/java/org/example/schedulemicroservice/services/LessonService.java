@@ -21,6 +21,7 @@ public class LessonService {
     private final ClassGroupService classGroupService;
     private final ClassroomService classroomService;
     private final TimeslotService timeslotService;
+    private final UserReferenceService userReferenceService;
 
     public List<LessonDTO> getAllLessons(){
         return lessonRepository.findAll()
@@ -30,7 +31,7 @@ public class LessonService {
     }
 
     public LessonDTO create(String subjectName, String teacherName, String classGroupName,
-                                  String classroomName, String dayOfWeek, String time) {
+                                  String classroomName, String dayOfWeek, String time, Long userId) {
         Lesson lesson = new Lesson();
 
         lesson.setSubject(subjectService.getSubjectByName(subjectName));
@@ -38,6 +39,7 @@ public class LessonService {
         lesson.setClassGroup(classGroupService.getClassGroupByName(classGroupName));
         lesson.setClassroom(classroomService.getClassroomByName(classroomName));
         lesson.setTimeslot(timeslotService.getTimeslotByDayAndTime(dayOfWeek, time));
+        lesson.setUserReference(userReferenceService.fetchAndSaveUserReference(userId));
 
         return lessonMapper.toDTO(lessonRepository.save(lesson));
     }
@@ -47,7 +49,7 @@ public class LessonService {
     }
 
     public LessonDTO update(Long id, String subjectName, String teacherName, String classGroupName,
-                                  String classroomName, String dayOfWeek, String time) {
+                                  String classroomName, String dayOfWeek, String time, Long userId) {
         Lesson lesson = lessonRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Lesson not found"));
 
@@ -56,6 +58,7 @@ public class LessonService {
         lesson.setClassGroup(classGroupService.getClassGroupByName(classGroupName));
         lesson.setClassroom(classroomService.getClassroomByName(classroomName));
         lesson.setTimeslot(timeslotService.getTimeslotByDayAndTime(dayOfWeek, time));
+        lesson.setUserReference(userReferenceService.fetchAndSaveUserReference(userId));
 
         return lessonMapper.toDTO(lessonRepository.save(lesson));
     }

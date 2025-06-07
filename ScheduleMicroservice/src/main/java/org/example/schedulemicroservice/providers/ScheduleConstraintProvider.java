@@ -14,7 +14,8 @@ public class ScheduleConstraintProvider implements ConstraintProvider {
                 classroomConflict(factory),
                 classGroupConflict(factory),
                 subjectFrequencyConstraint(factory),
-                oneTeacherPerSubjectConstraint(factory)
+                oneTeacherPerSubjectConstraint(factory),
+                avoidMultipleNonConsecutiveSubjectLessonsPerDay(factory)
         };
     }
 
@@ -74,6 +75,38 @@ public class ScheduleConstraintProvider implements ConstraintProvider {
                 .filter(((lesson1, lesson2) -> !lesson1.getTeacher().equals(lesson2.getTeacher())))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Multiple teachers for the same subject in same class");
+    }
+
+    private Constraint avoidMultipleNonConsecutiveSubjectLessonsPerDay(ConstraintFactory factory) {
+        return factory.forEach(Lesson.class)
+                .join(Lesson.class,
+                        Joiners.equal(Lesson::getClassGroup),
+                        Joiners.equal(Lesson::getSubject),
+                        Joiners.filtering((l1, l2) -> {
+                            if (l1.getId().equals(l2.getId())) return false;
+                            if (l1.getTimeslot() == null || l2.getTimeslot() == null) return false;
+                            return l1.getTimeslot().getDayOfWeek().equals(l2.getTimeslot().getDayOfWeek()) &&
+                                    !l1.getTimeslot().getTime().equals(l2.getTimeslot().getTime());
+                        })
+                )
+                .filter((l1, l2) -> {
+                    String t1 = l1.getTimeslot().getTime();
+                    String t2 = l2.getTimeslot().getTime();
+                    return Math.abs(getHourIndex(t1) - getHourIndex(t2)) > 1;
+                })
+                .penalize(HardSoftScore.ONE_SOFT)
+                .asConstraint("Avoid non-consecutive multiple subject lessons per day");
+    }
+
+    private int getHourIndex(String time) {
+        switch (time) {
+            case "08:00-09:00": return 1;
+            case "09:00-10:00": return 2;
+            case "10:00-11:00": return 3;
+            case "11:00-12:00": return 4;
+            case "12:00-13:00": return 5;
+            default: return 0;
+        }
     }
 }
 
